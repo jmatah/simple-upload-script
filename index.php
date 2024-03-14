@@ -33,6 +33,7 @@ if ( isset( $_POST['submit'] ) ) {
 
 			if ( is_uploaded_file( $file_temp_src ) ) {
 				// Instantiate an Amazon S3 client
+				/*
 				$s3 = new S3Client(
 					array(
 						'version'     => $version,
@@ -43,6 +44,15 @@ if ( isset( $_POST['submit'] ) ) {
 						),
 					)
 				);
+				*/
+
+				// Works on EC2 instance
+				$s3 = S3Client::factory(array(
+					'credentials' => array(
+						'key'    => $access_key_id,
+						'secret' => $secret_access_key,
+					)
+				));
 
 				// Upload file to S3 bucket
 				try {
@@ -58,6 +68,7 @@ if ( isset( $_POST['submit'] ) ) {
 					if ( ! empty( $result_arr['ObjectURL'] ) ) {
 						$s3_file_link = $result_arr['ObjectURL'];
 						$status       = 'success';
+						$statusMsg	= 'File was uploaded to the S3 bucket successfully: ' . $s3_file_link;
 					} else {
 						$statusMsg = 'Upload Failed! S3 Object URL not found.';
 						$status    = 'error';
@@ -65,14 +76,6 @@ if ( isset( $_POST['submit'] ) ) {
 				} catch ( Aws\S3\Exception\S3Exception $e ) {
 					$status    = 'error';
 					$statusMsg = $e->getMessage();
-				}
-
-				if ( empty( $api_error ) ) {
-					$status    = 'success';
-					$statusMsg = 'File was uploaded to the S3 bucket successfully!';
-				} else {
-					$status    = 'error';
-					$statusMsg = $api_error;
 				}
 			} else {
 				$status	   = 'error';
@@ -123,7 +126,7 @@ if ( isset( $_POST['submit'] ) ) {
 			<?php } ?>
 			<div class="col-md-6">
 				<h2>Upload File</h2>
-				<form method="post" action="upload.php" enctype="multipart/form-data">
+				<form method="post" action="index.php" enctype="multipart/form-data">
 					<div class="form-group upload">
 						<label><b>Select File:</b></label>
 						<input type="file" name="userfile" class="form-control" required>
